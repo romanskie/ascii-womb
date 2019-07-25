@@ -7,19 +7,21 @@
     [javax.imageio ImageIO ImageWriter ImageWriteParam IIOImage]
     [javax.imageio.stream FileImageOutputStream]))
 
-(def image-data (ImageIO/read (io/resource "me.jpg")))
+(def ^:private pixel-mapping " .-+*wGHM#&%")
 
-(def image-width (int (.getWidth image-data)))
+(def image-source (ImageIO/read (io/resource "me.jpg")))
 
-(def image-height (int (.getHeight image-data)))
+(def image-width (int (.getWidth image-source)))
 
-(defn get-pixels [^java.awt.image.BufferedImage img [x y] [w h]]
+(def image-height (int (.getHeight image-source)))
+
+(defn get-colors [^java.awt.image.BufferedImage img [x y] [w h]]
   (for [x (range x (+ x w))
         y (range y (+ y h))]
     (let [c (Color. (.getRGB img x y))]
       [(.getRed c) (.getGreen c) (.getBlue c)])))
 
-(defn calculate-brightness [color]
+(defn calc-brightness [color]
   (let [[red green blue] color]
     (Math/sqrt
       (+
@@ -27,8 +29,14 @@
        (* green green 0.691)
        (* blue blue 0.068)))))
 
-(def pixels (get-pixels image-data [0 0] [image-width image-height]))
+;;var idx = brightness / 255 * (_pixels.Length - 1);
+(defn to-pixel-idx [arg] (/ (int arg) (* 255 (- (count pixel-mapping) 1))))
 
-(def pixel-brightness (map #(calculate-brightness %) pixels))
+(def pixel-color-values (get-colors image-source [0 0] [image-width image-height]))
 
-(defn -main [& args] (prn pixel-brightness))
+(def pixel-brightness-values (map #(calc-brightness %) pixel-color-values))
+
+(def pixel-idx-values (map #(to-pixel-idx %) pixel-brightness-values))
+
+(defn -main [& args] (print pixel-color-values ))
+
