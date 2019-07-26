@@ -1,5 +1,6 @@
 (ns image-to-asci-art.core
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [clojure.string :as s])
   (:import
    [java.lang Math]
    [java.awt Image Color]
@@ -12,7 +13,7 @@
   "Example.txt")
 
 (def image-source
-  (ImageIO/read (io/resource "smiley.jpg")))
+  (ImageIO/read (io/resource "me.jpg")))
 
 (def image-width
   (int (.getWidth image-source)))
@@ -35,21 +36,23 @@
   (let [dividend (* 255 (- (count pixel-mapping) 1))]
     (/ brightness (/ dividend 100))))
 
-(defn- write-line-to-file [filepath, line]
-  (let [seq-line (seq line)]
-    (with-open [w (io/writer filepath :append true)]
-      (.write w (str (apply str seq-line) "\n")))))
+(defn- write-to-file [filepath output]
+  (with-open [w (io/writer filepath :append true)]
+    (.write w (apply str output))))
 
 (defn- write-image [^BufferedImage img
-                   [w h]]
-  (doseq [y (range 0 h)]
-    (do
-      (let [res (map #(let [c (Color. (.getRGB img % y))
-                            rgb [(.getRed c) (.getGreen c) (.getBlue c)]
-                            brightness (calc-brightness rgb)
-                            idx (to-pixel-idx brightness)
-                            mapping-index (get-index pixel-mapping idx)
-                            asci-sign (nth pixel-mapping mapping-index)] asci-sign) (range 0 w))]
-        (write-line-to-file output-path res)))))
+                    [w h]]
+  (let [width-range (range 0 w)
+        height-range (range 0 h)
+        res (reduce (fn [lines y]
+                      (let [line (map #(let [c (Color. (.getRGB img % y))
+                                             rgb [(.getRed c) (.getGreen c) (.getBlue c)]
+                                             brightness (calc-brightness rgb)
+                                             idx (to-pixel-idx brightness)
+                                             mapping-index (get-index pixel-mapping idx)
+                                             asci-sign (nth pixel-mapping mapping-index)] asci-sign) width-range)]
+                        (conj lines (s/join (concat line '("\n"))))))
+                    [] height-range)]
+    (write-to-file output-path res)))
 
 (defn -main [& args] (write-image image-source [image-width image-height]))
