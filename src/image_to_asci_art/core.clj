@@ -36,13 +36,35 @@
   (let [dividend (* 255 (- (count pixel-mapping) 1))]
     (/ brightness (/ dividend 100))))
 
+;;private static BufferedImage resize(BufferedImage img, int height, int width) {
+;;  Image tmp = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+;;  BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+;;  Graphics2D g2d = resized.createGraphics();
+;;  g2d.drawImage(tmp, 0, 0, null);
+;;  g2d.dispose();
+;;  return resized;
+;; }
+
+(defn resize-image [img width height]
+  (let [tmp (.getScaledInstance img width height (Image/SCALE_SMOOTH))
+        resized (new BufferedImage width height (BufferedImage/TYPE_INT_ARGB))
+        g2d (.createGraphics resized)]
+    (doto g2d
+        (.drawImage tmp 0 0 nil)
+        (.dispose))
+    resized))
+
 (defn- write-to-file [filepath output]
   (with-open [w (io/writer filepath :append true)]
     (.write w (apply str output))))
 
-(defn- write-image [^BufferedImage img
+(defn- write-image [^BufferedImage org-img
                     [w h]]
-  (let [width-range (range 0 w)
+  (let [
+        w (int (/ image-width 25))
+        h (int (/ image-height 45))
+        img (resize-image org-img w h)
+        width-range (range 0 w)
         height-range (range 0 h)
         res (reduce (fn [lines y]
                       (let [line (map #(let [c (Color. (.getRGB img % y))
