@@ -10,8 +10,6 @@
 
 (def pixel-mapping " .-+*wGHM#&%")
 
-(prn util/sample)
-
 (defn- write-to-file [filepath output]
   (with-open [w (io/writer filepath :append true)]
     (.write w (apply str output))))
@@ -23,10 +21,10 @@
   (ImageIO/read (io/resource "me.jpg")))
 
 (defn- get-img-width [^BufferedImage bufferd-img]
-  (int (.getWidth bufferd-img)))
+  (double (.getWidth bufferd-img)))
 
 (defn- get-img-height [^BufferedImage bufferd-img]
-  (int (.getHeight bufferd-img)))
+  (double (.getHeight bufferd-img)))
 
 (defn- calc-pixel-brightness [pixel-color]
   (let [[red green blue] pixel-color]
@@ -45,19 +43,21 @@
 
 (defn- resize-img [^BufferedImage bufferd-img width height]
   (let [img-scale (.getScaledInstance bufferd-img width height (Image/SCALE_SMOOTH))
-        resized-img (new BufferedImage width height (BufferedImage/TYPE_INT_ARGB))
+        resized-img (BufferedImage. width height (BufferedImage/TYPE_INT_ARGB))
         g2d (.createGraphics resized-img)]
     (doto g2d
       (.drawImage img-scale 0 0 nil)
       (.dispose))
     resized-img))
 
+(defn- scale [input factor]
+  (double (/ (* input factor) 1000)))
+
 (defn- scale-img [^BufferedImage bufferd-img scale-factor]
-  (let [scale (fn [input factor] (int (/ input factor)))
-        h (get-img-height bufferd-img)
+  (let [h (get-img-height bufferd-img)
         w (get-img-width bufferd-img)
         scaled-h (scale h scale-factor)
-        scaled-w (scale w (int (* scale-factor 0.5)))
+        scaled-w (scale w scale-factor)
         resized-img (resize-img bufferd-img scaled-w scaled-h)]
     resized-img))
 
@@ -77,4 +77,4 @@
                     [] h-range)]
     (write-to-file output-path res)))
 
-(defn -main [& args] (write-img (scale-img img-source 50)))
+(defn -main [& args] (write-img (scale-img img-source 10)))
