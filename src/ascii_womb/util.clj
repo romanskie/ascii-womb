@@ -38,7 +38,7 @@
     resized-img))
 
 (defn- scale [input-size scale-factor]
-  (double (/ (* input-size scale-factor) 100)))
+  (double (/ (* input-size scale-factor) 200)))
 
 (defn- write-to-file [output-path output]
   (with-open [w (io/writer output-path :append true)]

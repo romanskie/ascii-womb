@@ -11,8 +11,7 @@
 (defonce ascii-mapping
   " .-+*wGHM#&%")
 
-(defonce image-scale-factor
-  20)
+(defonce image-scale-factor 40)
 
 (defonce output-path
   "output.txt")
