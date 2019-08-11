@@ -1,14 +1,21 @@
-# asci-womb
+# Ascii-Womb
 
-A Clojure library designed to ... well, that part is up to you.
+<div style="text-align:center">
+  <img src="https://github.com/romanskie/ascii-womb/blob/master/assets/couchant-wombat.jpg">
+</div>
+
+## Overview
+
+This is a tool entirely written in Clojure to convert your images (png, jpgs etc) into an ascii art. The current stat is still WIP.
 
 ## Usage
 
-FIXME
+First copy an image of your choice into the ressources folder and also change the image path in the ```core.clj``` file. You can also find there an option to scale down the image.
 
-## License
+Run the ascii-womb tool as follows:
 
-Copyright © 2019 FIXME
+```bash
+lein run
+```
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Check the output in the ```output.txt``` file in the project root.

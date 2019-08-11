@@ -1,4 +1,4 @@
-(ns asci-womb.util
+(ns ascii-womb.util
   (:require [clojure.java.io :as io]
             [clojure.string :as s])
   (:import
@@ -21,12 +21,12 @@
       (* green green 0.691)
       (* blue blue 0.068)))))
 
-(defn- get-brightness-mapping [brightness asci-mapping]
-  (let [dividend (* 255 (- (count asci-mapping) 1))]
+(defn- get-brightness-mapping [brightness ascii-mapping]
+  (let [dividend (* 255 (- (count ascii-mapping) 1))]
     (/ brightness (/ dividend 100))))
 
-(defn- get-asci-mapping-idx [asci-mapping idx]
-  (- (count asci-mapping) (int (Math/round idx)) 1))
+(defn- get-ascii-mapping-idx [ascii-mapping idx]
+  (- (count ascii-mapping) (int (Math/round idx)) 1))
 
 (defn- resize-img [^BufferedImage bufferd-img width height]
   (let [img-scale (.getScaledInstance bufferd-img width height (Image/SCALE_SMOOTH))
@@ -52,7 +52,7 @@
         resized-img (resize-img bufferd-img scaled-w scaled-h)]
     resized-img))
 
-(defn write-img [^BufferedImage bufferd-img asci-mapping output-path]
+(defn write-img [^BufferedImage bufferd-img ascii-mapping output-path]
   (let [w (get-img-width bufferd-img)
         h (get-img-height bufferd-img)
         w-range (range 0 w)
@@ -61,9 +61,9 @@
                       (let [line (map #(let [color (Color. (.getRGB bufferd-img % y))
                                              rgb-values [(.getRed color) (.getGreen color) (.getBlue color)]
                                              brightness-value (calc-pixel-brightness rgb-values)
-                                             brightness-mapping (get-brightness-mapping brightness-value asci-mapping)
-                                             asci-mapping-idx (get-asci-mapping-idx asci-mapping brightness-mapping)
-                                             asci-sign (nth asci-mapping asci-mapping-idx)] asci-sign) w-range)]
+                                             brightness-mapping (get-brightness-mapping brightness-value ascii-mapping)
+                                             ascii-mapping-idx (get-ascii-mapping-idx ascii-mapping brightness-mapping)
+                                             ascii-sign (nth ascii-mapping ascii-mapping-idx)] ascii-sign) w-range)]
                         (conj lines (s/join (concat line '("\n"))))))
                     [] h-range)]
     (write-to-file output-path res)))

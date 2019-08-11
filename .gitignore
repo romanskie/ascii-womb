@@ -2,10 +2,12 @@
 /classes
 /checkouts
 pom.xml
+output.txt
 pom.xml.asc
 *.jar
 *.class
 /.lein-*
+/.lsp
 /.nrepl-port
 .hgignore
 .hg/
