@@ -1,6 +1,6 @@
-(ns image-to-asci-art.core-test
+(ns asci-womb.core-test
   (:require [clojure.test :refer :all]
-            [image-to-asci-art.core :refer :all]))
+            [asci-womb.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."

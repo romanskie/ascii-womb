@@ -1,4 +1,4 @@
-# image-to-asci-art
+# asci-womb
 
 A Clojure library designed to ... well, that part is up to you.
 
