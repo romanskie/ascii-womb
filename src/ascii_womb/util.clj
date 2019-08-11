@@ -1,5 +1,6 @@
 (ns ascii-womb.util
   (:require [clojure.java.io :as io]
+            [clojure.string :as cstr]
             [clojure.string :as s])
   (:import
    [java.lang Math]
@@ -22,8 +23,13 @@
       (* blue blue 0.068)))))
 
 (defn- get-brightness-mapping [brightness ascii-mapping]
-  (let [dividend (* 255 (- (count ascii-mapping) 1))]
-    (/ brightness (/ dividend 100))))
+  (let [dividend (-> ascii-mapping
+                     (count)
+                     (- 1)
+                     (* 255))]
+    (-> dividend
+        (/ 100)
+        (/ brightness))))
 
 (defn- get-ascii-mapping-idx [ascii-mapping idx]
   (- (count ascii-mapping) (int (Math/round idx)) 1))
@@ -37,33 +43,55 @@
       (.dispose))
     resized-img))
 
-(defn- scale [input-size scale-factor]
-  (double (/ (* input-size scale-factor) 200)))
+(defn- scale [input-size scaling-factor]
+  (double (/ (* input-size scaling-factor) 200)))
 
-(defn- write-to-file [output-path output]
-  (with-open [w (io/writer output-path :append true)]
+(defn- write-output-to-file [filepath output]
+  (with-open [w (io/writer filepath :append true)]
     (.write w (apply str output))))
 
-(defn scale-img [^BufferedImage bufferd-img scale-factor]
+(defn- get-img-src-ending [src]
+  (let [end (count src)
+        start (- end 4)]
+    (cstr/upper-case (subs src start end))))
+
+(defn- is-valid-img-src [src]
+  (let [valid-src #{".JPG" ".JPE" ".BMP"  ".GIF" ".PNG"}
+        ending (-> src
+                   (cstr/upper-case)
+                   (get-img-src-ending))]
+    (contains? valid-src ending)))
+
+(defn arg-to-img-src [arg]
+  (if (is-valid-img-src arg)
+    (try
+      (let [file (io/as-file arg)]
+        (ImageIO/read file))
+      (catch java.io.IOException ex (.getMessage ex)))
+    (throw (Exception. (str "Provided image filetype not supported.")))))
+
+(defn scale-img [^BufferedImage bufferd-img scaling-factor]
   (let [h (get-img-height bufferd-img)
         w (get-img-width bufferd-img)
-        scaled-h (scale h (* scale-factor 0.5))
-        scaled-w (scale w scale-factor)
+        scaled-h (-> scaling-factor
+                     (* 0.5)
+                     (scale h))
+        scaled-w (scale w scaling-factor)
         resized-img (resize-img bufferd-img scaled-w scaled-h)]
     resized-img))
 
-(defn write-img [^BufferedImage bufferd-img ascii-mapping output-path]
+(defn write-img [^BufferedImage bufferd-img ascii-mapping filepath]
   (let [w (get-img-width bufferd-img)
         h (get-img-height bufferd-img)
         w-range (range 0 w)
         h-range (range 0 h)
-        res (reduce (fn [lines y]
-                      (let [line (map #(let [color (Color. (.getRGB bufferd-img % y))
-                                             rgb-values [(.getRed color) (.getGreen color) (.getBlue color)]
-                                             brightness-value (calc-pixel-brightness rgb-values)
-                                             brightness-mapping (get-brightness-mapping brightness-value ascii-mapping)
-                                             ascii-mapping-idx (get-ascii-mapping-idx ascii-mapping brightness-mapping)
-                                             ascii-sign (nth ascii-mapping ascii-mapping-idx)] ascii-sign) w-range)]
-                        (conj lines (s/join (concat line '("\n"))))))
-                    [] h-range)]
-    (write-to-file output-path res)))
+        output (reduce (fn [lines y]
+                         (let [line (map #(let [color (Color. (.getRGB bufferd-img % y))
+                                                rgb-values [(.getRed color) (.getGreen color) (.getBlue color)]
+                                                brightness-value (calc-pixel-brightness rgb-values)
+                                                brightness-mapping (get-brightness-mapping brightness-value ascii-mapping)
+                                                ascii-mapping-idx (get-ascii-mapping-idx ascii-mapping brightness-mapping)
+                                                ascii-sign (nth ascii-mapping ascii-mapping-idx)] ascii-sign) w-range)]
+                           (conj lines (s/join (concat line '("\n"))))))
+                       [] h-range)]
+    (write-output-to-file filepath output)))

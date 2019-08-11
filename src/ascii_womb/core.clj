@@ -1,7 +1,7 @@
 (ns ascii-womb.core
   (:gen-class)
-  (:require [clojure.java.io :as io]
-            [ascii-womb.util :as util])
+  (:require
+   [ascii-womb.util :as util])
   (:import
    [java.lang Math]
    [java.awt Image Color]
@@ -11,15 +11,18 @@
 (defonce ascii-mapping
   " .-+*wGHM#&%")
 
-(defonce image-scale-factor 40)
+(def img-scaling-factor 40)
 
-(defonce output-path
-  "output.txt")
+(def default-output-path "output/asci-art.txt")
 
-(defonce img-source
-  (ImageIO/read (io/resource "couchant-wombat.jpg")))
+(defn write-output [arg]
+  (let [img-src (util/arg-to-img-src arg)
+        scaled-src (-> img-src
+                       (util/scale-img img-scaling-factor))]
+    (util/write-img scaled-src ascii-mapping default-output-path)))
 
-(defn -main [& args]
-  (util/write-img
-   (util/scale-img img-source image-scale-factor)
-   ascii-mapping output-path))
+(defn -main [& args] ; & creates a list of var-args
+  (if (empty? args)
+    (throw (Exception. "No args provided. Please prove a path to your image!"))
+    (let [img-src (first args)]
+      write-output img-src)))
