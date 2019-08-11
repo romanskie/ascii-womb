@@ -18,7 +18,7 @@
   "output.txt")
 
 (defonce img-source
-  (ImageIO/read (io/resource "smiley.jpg")))
+  (ImageIO/read (io/resource "couchant-wombat.jpg")))
 
 (defn -main [& args]
   (util/write-img
