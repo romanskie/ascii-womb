@@ -1,6 +1,5 @@
 (ns ascii-womb.util
   (:require [clojure.java.io :as io]
-            [clojure.string :as cstr]
             [clojure.string :as s])
   (:import
    [java.lang Math]
@@ -23,16 +22,13 @@
       (* blue blue 0.068)))))
 
 (defn- get-brightness-mapping [brightness ascii-mapping]
-  (let [dividend (-> ascii-mapping
-                     (count)
-                     (- 1)
-                     (* 255))]
-    (-> dividend
-        (/ 100)
-        (/ brightness))))
+  (let [dividend (/ (* 255 (- (count ascii-mapping) 1)) 100)]
+    (/ brightness dividend)))
 
 (defn- get-ascii-mapping-idx [ascii-mapping idx]
-  (- (count ascii-mapping) (int (Math/round idx)) 1))
+  (let [ascii-mapping (count ascii-mapping)
+        idx (int (Math/round idx))]
+    (- ascii-mapping idx 1)))
 
 (defn- resize-img [^BufferedImage bufferd-img width height]
   (let [img-scale (.getScaledInstance bufferd-img width height (Image/SCALE_SMOOTH))
@@ -43,8 +39,8 @@
       (.dispose))
     resized-img))
 
-(defn- scale [input-size scaling-factor]
-  (double (/ (* input-size scaling-factor) 200)))
+(defn- scale [input-size scale-factor]
+  (double (/ (* input-size scale-factor) 200)))
 
 (defn- write-output-to-file [filepath output]
   (with-open [w (io/writer filepath :append true)]
@@ -53,16 +49,16 @@
 (defn- get-img-src-ending [src]
   (let [end (count src)
         start (- end 4)]
-    (cstr/upper-case (subs src start end))))
+    (s/upper-case (subs src start end))))
 
 (defn- is-valid-img-src [src]
   (let [valid-src #{".JPG" ".JPE" ".BMP"  ".GIF" ".PNG"}
         ending (-> src
-                   (cstr/upper-case)
+                   (s/upper-case)
                    (get-img-src-ending))]
     (contains? valid-src ending)))
 
-(defn arg-to-img-src [arg]
+(defn input->img-src [arg]
   (if (is-valid-img-src arg)
     (try
       (let [file (io/as-file arg)]
