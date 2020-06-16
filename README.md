@@ -1,4 +1,4 @@
-# Ascii-Womb
+# ASCII-Womb
 
 <div style="text-align:center">
   <img src="https://github.com/romanskie/ascii-womb/blob/master/assets/colourd-wombat.jpg">
@@ -6,7 +6,7 @@
 
 ## Overview
 
-This is a tool entirely written in Clojure to convert your images (png, jpgs etc) into an ascii art. The current stat is still WIP.
+This is a tool entirely written in Clojure to convert your images (PNG, JPG etc.) into an ASCII art. The current state is still WIP.
 
 ## Usage
 
